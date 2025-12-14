@@ -168,7 +168,7 @@ export default function EventsScreen() {
         <TimeRangeSelector />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#2196F3" />
-          <Text style={styles.loadingText}>Loading events...</Text>
+          <Text style={styles.loadingText}>{t('loadingEvents', language)}</Text>
         </View>
       </View>
     );
@@ -180,9 +180,9 @@ export default function EventsScreen() {
         <TimeRangeSelector />
         <View style={styles.centered}>
           <Ionicons name="alert-circle" size={64} color="#F44336" />
-          <Text style={styles.errorText}>Failed to load events</Text>
+          <Text style={styles.errorText}>{t('failedToLoad', language)}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={styles.retryButtonText}>{t('retry', language)}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -195,7 +195,7 @@ export default function EventsScreen() {
         <TimeRangeSelector />
         <View style={styles.centered}>
           <Ionicons name="notifications-off-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>No events found</Text>
+          <Text style={styles.emptyText}>{t('noEvents', language)}</Text>
         </View>
       </View>
     );
