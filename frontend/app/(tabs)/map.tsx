@@ -131,37 +131,10 @@ export default function MapScreen() {
     );
   }
 
-  // Web fallback - show message to use mobile
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.webMessage}>
-          <Ionicons name="phone-portrait" size={64} color="#2196F3" />
-          <Text style={styles.webMessageTitle}>
-            {language === 'fr' ? 'Carte Interactive' : language === 'ar' ? 'خريطة تفاعلية' : 'Interactive Map'}
-          </Text>
-          <Text style={styles.webMessageText}>
-            {language === 'fr' 
-              ? 'La carte interactive est disponible sur l\'application mobile. Utilisez Expo Go pour voir les véhicules sur la carte en temps réel.' 
-              : language === 'ar'
-              ? 'الخريطة التفاعلية متاحة على تطبيق الهاتف المحمول. استخدم Expo Go لرؤية المركبات على الخريطة في الوقت الفعلي.'
-              : 'Interactive map is available on the mobile app. Use Expo Go to see vehicles on the map in real-time.'}
-          </Text>
-          <TouchableOpacity style={styles.vehiclesButton} onPress={() => router.push('/(tabs)/vehicles')}>
-            <Ionicons name="list" size={24} color="#fff" />
-            <Text style={styles.vehiclesButtonText}>
-              {language === 'fr' ? 'Voir la Liste' : language === 'ar' ? 'عرض القائمة' : 'View List'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
-  // Native map view
+  // Map view (platform-specific component handles native vs web)
   return (
     <View style={styles.container}>
-      <MapView
+      <NativeMapView
         ref={mapRef}
         provider={PROVIDER_DEFAULT}
         style={styles.map}
@@ -177,7 +150,7 @@ export default function MapScreen() {
         showsScale
       >
         {vehicles?.map((vehicle) => (
-          <Marker
+          <NativeMarker
             key={vehicle.imei}
             coordinate={{
               latitude: vehicle.lat,
@@ -188,16 +161,18 @@ export default function MapScreen() {
             description={`${t('speed', language)}: ${vehicle.speed.toFixed(0)} km/h - ${getStatusText(vehicle)}`}
             onPress={() => {
               setSelectedVehicle(vehicle.imei);
-              mapRef.current?.animateToRegion({
-                latitude: vehicle.lat,
-                longitude: vehicle.lng,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }, 500);
+              if (Platform.OS !== 'web' && mapRef.current) {
+                mapRef.current.animateToRegion({
+                  latitude: vehicle.lat,
+                  longitude: vehicle.lng,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }, 500);
+              }
             }}
           />
         ))}
-      </MapView>
+      </NativeMapView>
 
       {selectedVehicle && vehicles && (
         <View style={styles.infoCard}>
