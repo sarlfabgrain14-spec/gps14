@@ -49,7 +49,7 @@ export default function LoginScreen() {
       <View style={styles.content}>
         <View style={styles.header}>
           <Ionicons name="car-sport" size={64} color="#2196F3" />
-          <Text style={styles.title}>GPS Tracker</Text>
+          <Text style={styles.title}>GPS14</Text>
           <Text style={styles.subtitle}>Vehicle Tracking System</Text>
         </View>
 
