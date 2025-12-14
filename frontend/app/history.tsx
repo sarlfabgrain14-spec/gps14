@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Platform,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import MapView, { Polyline, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 interface RoutePoint {
   lat: number;
@@ -87,6 +86,15 @@ export default function HistoryScreen() {
       return (end.getTime() - start.getTime()) / 1000 / 60; // Minutes
     } catch {
       return 0;
+    }
+  };
+
+  const openRouteInMaps = () => {
+    if (data && data.points.length > 0) {
+      const start = data.points[0];
+      const end = data.points[data.points.length - 1];
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}`;
+      Linking.openURL(url);
     }
   };
 
@@ -165,49 +173,18 @@ export default function HistoryScreen() {
     );
   }
 
-  const coordinates = data.points.map((point) => ({
-    latitude: point.lat,
-    longitude: point.lng,
-  }));
-
   return (
     <ScrollView style={styles.container}>
       <DaySelector />
 
-      {/* Map with Route */}
-      <View style={styles.mapContainer}>
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          initialRegion={{
-            latitude: data.points[0].lat,
-            longitude: data.points[0].lng,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {/* Route polyline */}
-          <Polyline
-            coordinates={coordinates}
-            strokeColor="#2196F3"
-            strokeWidth={3}
-          />
-          
-          {/* Start marker */}
-          <Marker
-            coordinate={coordinates[0]}
-            title="Start"
-            pinColor="#4CAF50"
-          />
-          
-          {/* End marker */}
-          <Marker
-            coordinate={coordinates[coordinates.length - 1]}
-            title="End"
-            pinColor="#F44336"
-          />
-        </MapView>
-      </View>
+      {/* Map Placeholder */}
+      <TouchableOpacity style={styles.mapPlaceholder} onPress={openRouteInMaps}>
+        <Ionicons name="map" size={48} color="#2196F3" />
+        <Text style={styles.mapPlaceholderText}>Tap to open route in Maps</Text>
+        <Text style={styles.routeInfo}>
+          {data.points.length} points • {data.totalDistance.toFixed(1)} km
+        </Text>
+      </TouchableOpacity>
 
       {/* Statistics */}
       <View style={styles.statsContainer}>
@@ -341,12 +318,22 @@ const styles = StyleSheet.create({
   dayButtonTextActive: {
     color: '#fff',
   },
-  mapContainer: {
-    height: 300,
-    backgroundColor: '#e0e0e0',
+  mapPlaceholder: {
+    height: 200,
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  map: {
-    flex: 1,
+  mapPlaceholderText: {
+    fontSize: 16,
+    color: '#2196F3',
+    marginTop: 12,
+    fontWeight: '600',
+  },
+  routeInfo: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -428,6 +415,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     marginTop: 2,
+    fontFamily: 'monospace',
   },
   pointSpeed: {
     fontSize: 14,

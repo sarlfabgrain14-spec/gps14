@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { format } from 'date-fns';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 export default function VehicleDetailScreen() {
   const router = useRouter();
@@ -59,6 +59,13 @@ export default function VehicleDetailScreen() {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+  };
+
+  const openInMaps = () => {
+    if (location) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`;
+      Linking.openURL(url);
+    }
   };
 
   const InfoRow = ({ icon, label, value }: { icon: any; label: string; value: string }) => (
@@ -106,30 +113,14 @@ export default function VehicleDetailScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      {/* Map Section */}
-      <View style={styles.mapContainer}>
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          initialRegion={{
-            latitude: location.lat,
-            longitude: location.lng,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          scrollEnabled={false}
-          zoomEnabled={false}
-        >
-          <Marker
-            coordinate={{
-              latitude: location.lat,
-              longitude: location.lng,
-            }}
-            title={location.name}
-            pinColor={getStatusColor()}
-          />
-        </MapView>
-      </View>
+      {/* Map Placeholder */}
+      <TouchableOpacity style={styles.mapPlaceholder} onPress={openInMaps}>
+        <Ionicons name="map" size={48} color="#2196F3" />
+        <Text style={styles.mapPlaceholderText}>Tap to open in Maps</Text>
+        <Text style={styles.coordsText}>
+          {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+        </Text>
+      </TouchableOpacity>
 
       {/* Status Card */}
       <View style={styles.card}>
@@ -153,7 +144,7 @@ export default function VehicleDetailScreen() {
         <InfoRow
           icon="navigate"
           label="Direction"
-          value={`${location.angle.toFixed(0)}°`}
+          value={`${location.angle.toFixed(0)}\u00b0`}
         />
         <InfoRow
           icon="trending-up"
@@ -221,12 +212,23 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
   },
-  mapContainer: {
+  mapPlaceholder: {
     height: 250,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  map: {
-    flex: 1,
+  mapPlaceholderText: {
+    fontSize: 16,
+    color: '#2196F3',
+    marginTop: 12,
+    fontWeight: '600',
+  },
+  coordsText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    fontFamily: 'monospace',
   },
   card: {
     backgroundColor: '#fff',
