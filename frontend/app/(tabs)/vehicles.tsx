@@ -30,6 +30,7 @@ interface Vehicle {
 export default function VehiclesScreen() {
   const router = useRouter();
   const { apiKey } = useAuthStore();
+  const { language } = useLanguageStore();
 
   useEffect(() => {
     if (apiKey) {
