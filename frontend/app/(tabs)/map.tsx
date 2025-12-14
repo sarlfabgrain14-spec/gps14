@@ -7,14 +7,30 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  FlatList,
+  RefreshControl,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import { useLanguageStore } from '../../stores/languageStore';
+import { t } from '../../utils/translations';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import { format } from 'date-fns';
+
+// Dynamic import for react-native-maps (only on native)
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_DEFAULT: any = null;
+
+if (Platform.OS !== 'web') {
+  const Maps = require('react-native-maps');
+  MapView = Maps.default;
+  Marker = Maps.Marker;
+  PROVIDER_DEFAULT = Maps.PROVIDER_DEFAULT;
+}
 
 interface VehicleLocation {
   imei: string;
