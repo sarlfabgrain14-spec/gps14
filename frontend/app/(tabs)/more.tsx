@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { trackingApi } from '@/services/api';
-import { useAuthStore } from '@/stores/authStore';
+import { trackingApi } from '../../services/api';
+import { useAuthStore } from '../../stores/authStore';
 import { useRouter } from 'expo-router';
 
 export default function MoreScreen() {
