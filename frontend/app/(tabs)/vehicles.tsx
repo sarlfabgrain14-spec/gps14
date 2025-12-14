@@ -86,9 +86,9 @@ export default function VehiclesScreen() {
   };
 
   const getStatusText = (vehicle: Vehicle) => {
-    if (!vehicle.speed) return 'No Data';
-    if (vehicle.speed > 0) return 'Moving';
-    return 'Stopped';
+    if (!vehicle.speed) return language === 'fr' ? 'Pas de données' : language === 'ar' ? 'لا توجد بيانات' : 'No Data';
+    if (vehicle.speed > 0) return t('moving', language);
+    return t('stopped', language);
   };
 
   const formatLastUpdate = (dateStr?: string) => {
