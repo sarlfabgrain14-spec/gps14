@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '@/stores/authStore';
-import { trackingApi } from '@/services/api';
+import { useAuthStore } from '../stores/authStore';
+import { trackingApi } from '../services/api';
 
 export default function LoginScreen() {
   const router = useRouter();
