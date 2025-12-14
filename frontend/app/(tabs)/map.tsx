@@ -15,11 +15,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useLanguageStore } from '../../stores/languageStore';
 import { t } from '../../utils/translations';
 import { useRouter } from 'expo-router';
-
-// Import maps only for native
-const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
-const Marker = Platform.OS !== 'web' ? require('react-native-maps').Marker : null;
-const PROVIDER_DEFAULT = Platform.OS !== 'web' ? require('react-native-maps').PROVIDER_DEFAULT : null;
+import { NativeMapView, NativeMarker, PROVIDER_DEFAULT } from '../../components/MapViewComponent';
 
 interface VehicleLocation {
   imei: string;
