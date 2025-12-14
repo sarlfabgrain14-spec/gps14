@@ -152,7 +152,6 @@ export default function MapScreen() {
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        provider={PROVIDER_DEFAULT}
         style={styles.map}
         initialRegion={{
           latitude: vehicles[0]?.lat || 35.3764,
