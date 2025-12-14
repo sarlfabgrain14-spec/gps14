@@ -225,6 +225,8 @@ export const translations = {
     // Events
     noEvents: 'لا توجد أحداث',
     systemEvent: 'حدث النظام',
+    loadingEvents: 'جاري تحميل الأحداث...',
+    lastUpdate: 'آخر تحديث',
     
     // More
     features: 'الميزات',
