@@ -181,9 +181,9 @@ export default function HistoryScreen() {
       {/* Map Placeholder */}
       <TouchableOpacity style={styles.mapPlaceholder} onPress={openRouteInMaps}>
         <Ionicons name="map" size={48} color="#2196F3" />
-        <Text style={styles.mapPlaceholderText}>Tap to open route in Maps</Text>
+        <Text style={styles.mapPlaceholderText}>{t('tapToOpenMaps', language)}</Text>
         <Text style={styles.routeInfo}>
-          {data.points.length} points • {data.totalDistance.toFixed(1)} km
+          {data.points.length} {t('routePoints', language)} • {data.totalDistance.toFixed(1)} km
         </Text>
       </TouchableOpacity>
 
@@ -191,13 +191,13 @@ export default function HistoryScreen() {
       <View style={styles.statsContainer}>
         <StatCard
           icon="speedometer"
-          label="Distance"
+          label={t('distance', language)}
           value={data.totalDistance.toFixed(1)}
           unit="km"
         />
         <StatCard
           icon="time"
-          label="Duration"
+          label={t('duration', language)}
           value={Math.round(data.duration)}
           unit="min"
         />
@@ -206,13 +206,13 @@ export default function HistoryScreen() {
       <View style={styles.statsContainer}>
         <StatCard
           icon="trending-up"
-          label="Max Speed"
+          label={t('maxSpeed', language)}
           value={Math.round(data.maxSpeed)}
           unit="km/h"
         />
         <StatCard
           icon="analytics"
-          label="Avg Speed"
+          label={t('avgSpeed', language)}
           value={Math.round(data.avgSpeed)}
           unit="km/h"
         />
@@ -220,7 +220,7 @@ export default function HistoryScreen() {
 
       {/* Route Points */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Route Points ({data.points.length})</Text>
+        <Text style={styles.cardTitle}>{t('routePoints', language)} ({data.points.length})</Text>
         {data.points.slice(0, 10).map((point, index) => (
           <View key={index} style={styles.pointRow}>
             <View style={styles.pointIcon}>
