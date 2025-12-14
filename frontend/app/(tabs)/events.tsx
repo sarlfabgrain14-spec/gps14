@@ -45,14 +45,14 @@ export default function EventsScreen() {
         data = await trackingApi.getLastEvents();
       }
 
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         return data.map((event: any, index: number) => ({
           id: `${event.imei}-${event.dt_tracker}-${index}`,
           imei: event.imei,
-          name: event.name || event.imei,
-          event: event.event || 'Unknown',
-          dt_tracker: event.dt_tracker,
-          message: event.message,
+          name: event.name || event.imei || 'Unknown Vehicle',
+          event: event.event || event.type || 'System Event',
+          dt_tracker: event.dt_tracker || event.dt_server || new Date().toISOString(),
+          message: event.message || event.msg || '',
         }));
       }
       return [];
