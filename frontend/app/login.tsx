@@ -83,7 +83,7 @@ export default function LoginScreen() {
             <Ionicons 
               name={showLanguages ? 'chevron-up' : 'chevron-down'} 
               size={20} 
-              color=\"#666\" 
+              color="#666" 
             />
           </TouchableOpacity>
 
