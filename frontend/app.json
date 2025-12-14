@@ -29,7 +29,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-maps",
       [
         "expo-location",
         {
