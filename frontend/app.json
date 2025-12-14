@@ -43,7 +43,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#2196F3"
         }
-      ]
+      ],
+      "expo-maps"
     ],
     "experiments": {
       "typedRoutes": true
