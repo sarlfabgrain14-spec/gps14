@@ -140,7 +140,7 @@ export default function HistoryScreen() {
         <DaySelector />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#2196F3" />
-          <Text style={styles.loadingText}>Loading route history...</Text>
+          <Text style={styles.loadingText}>{t('loading', language)}</Text>
         </View>
       </View>
     );
@@ -152,9 +152,9 @@ export default function HistoryScreen() {
         <DaySelector />
         <View style={styles.centered}>
           <Ionicons name="alert-circle" size={64} color="#F44336" />
-          <Text style={styles.errorText}>Failed to load route</Text>
+          <Text style={styles.errorText}>{t('failedToLoad', language)}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={styles.retryButtonText}>{t('retry', language)}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -167,10 +167,8 @@ export default function HistoryScreen() {
         <DaySelector />
         <View style={styles.centered}>
           <Ionicons name="map-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>No route data available</Text>
-          <Text style={styles.emptySubtext}>
-            No movement recorded in the last {selectedDays} {selectedDays === 1 ? 'day' : 'days'}
-          </Text>
+          <Text style={styles.emptyText}>{t('noRouteData', language)}</Text>
+          <Text style={styles.emptySubtext}>{t('noMovement', language)}</Text>
         </View>
       </View>
     );
