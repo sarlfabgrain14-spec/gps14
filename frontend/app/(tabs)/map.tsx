@@ -47,7 +47,8 @@ interface VehicleLocation {
 export default function MapScreen() {
   const router = useRouter();
   const { apiKey, logout } = useAuthStore();
-  const mapRef = useRef<MapView>(null);
+  const { language } = useLanguageStore();
+  const mapRef = useRef<any>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
@@ -64,7 +65,7 @@ export default function MapScreen() {
     })();
   }, []);
 
-  const { data: vehicles, isLoading, error, refetch } = useQuery({
+  const { data: vehicles, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['vehicle-locations'],
     queryFn: async () => {
       const locations = await trackingApi.getObjectLocations('*');
@@ -88,7 +89,7 @@ export default function MapScreen() {
   });
 
   useEffect(() => {
-    if (vehicles && vehicles.length > 0 && mapRef.current) {
+    if (vehicles && vehicles.length > 0 && mapRef.current && Platform.OS !== 'web') {
       const coordinates = vehicles
         .filter((v) => v.lat && v.lng)
         .map((v) => ({
@@ -108,10 +109,10 @@ export default function MapScreen() {
   }, [vehicles]);
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('logout', language), t('logoutConfirm', language), [
+      { text: t('cancel', language), style: 'cancel' },
       {
-        text: 'Logout',
+        text: t('logout', language),
         style: 'destructive',
         onPress: async () => {
           await logout();
@@ -121,21 +122,92 @@ export default function MapScreen() {
     ]);
   };
 
-  const getMarkerColor = (vehicle: VehicleLocation) => {
+  const getStatusColor = (vehicle: VehicleLocation) => {
     if (vehicle.speed > 0) return '#4CAF50';
     return '#F44336';
   };
 
   const getStatusText = (vehicle: VehicleLocation) => {
-    if (vehicle.speed > 0) return 'Moving';
-    return 'Stopped';
+    if (vehicle.speed > 0) return t('moving', language);
+    return t('stopped', language);
   };
+
+  const formatLastUpdate = (dateStr?: string) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return format(new Date(dateStr), 'MMM dd, HH:mm');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Card view renderer for web
+  const renderVehicleCard = ({ item }: { item: VehicleLocation }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => {
+        router.push({
+          pathname: '/vehicle-detail',
+          params: { imei: item.imei, name: item.name },
+        });
+      }}
+    >
+      <View style={styles.cardHeader}>
+        <View style={styles.vehicleInfo}>
+          <View style={[styles.statusDot, { backgroundColor: getStatusColor(item) }]} />
+          <View style={styles.vehicleText}>
+            <Text style={styles.vehicleName}>{item.name}</Text>
+            <Text style={styles.vehicleImei}>{item.imei}</Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="#ccc" />
+      </View>
+
+      <View style={styles.cardBody}>
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Ionicons name="speedometer" size={18} color="#666" />
+            <Text style={styles.infoLabel}>{t('speed', language)}</Text>
+            <Text style={styles.infoValue}>{item.speed.toFixed(0)} km/h</Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Ionicons name="navigate" size={18} color="#666" />
+            <Text style={styles.infoLabel}>{t('direction', language)}</Text>
+            <Text style={styles.infoValue}>{item.angle.toFixed(0)}°</Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Ionicons name={item.speed > 0 ? 'play-circle' : 'stop-circle'} size={18} color={getStatusColor(item)} />
+            <Text style={styles.infoLabel}>Status</Text>
+            <Text style={[styles.infoValue, { color: getStatusColor(item) }]}>
+              {getStatusText(item)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.locationRow}>
+          <Ionicons name="location" size={16} color="#999" />
+          <Text style={styles.locationText}>
+            {item.lat.toFixed(6)}, {item.lng.toFixed(6)}
+          </Text>
+        </View>
+
+        <View style={styles.footer}>
+          <Ionicons name="time-outline" size={16} color="#999" />
+          <Text style={styles.lastUpdate}>
+            {t('lastUpdate', language)}: {formatLastUpdate(item.dt_tracker)}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   if (isLoading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#2196F3" />
-        <Text style={styles.loadingText}>Loading vehicles...</Text>
+        <Text style={styles.loadingText}>{t('loadingVehicles', language)}</Text>
       </View>
     );
   }
@@ -144,9 +216,9 @@ export default function MapScreen() {
     return (
       <View style={styles.centered}>
         <Ionicons name="alert-circle" size={64} color="#F44336" />
-        <Text style={styles.errorText}>Failed to load vehicles</Text>
+        <Text style={styles.errorText}>{t('failedToLoad', language)}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.retryButtonText}>{t('retry', language)}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -154,13 +226,63 @@ export default function MapScreen() {
 
   if (!vehicles || vehicles.length === 0) {
     return (
-      <View style={styles.centered}>
-        <Ionicons name="car-sport-outline" size={64} color="#ccc" />
-        <Text style={styles.emptyText}>No vehicles found</Text>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t('liveTracking', language)}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerButton} onPress={() => refetch()}>
+              <Ionicons name="refresh" size={24} color="#2196F3" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Ionicons name="log-out" size={24} color="#F44336" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.centered}>
+          <Ionicons name="car-sport-outline" size={64} color="#ccc" />
+          <Text style={styles.emptyText}>{t('noVehicles', language)}</Text>
+        </View>
       </View>
     );
   }
 
+  // Return card view for web, map view for native
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerTitle}>{t('liveTracking', language)}</Text>
+            <Text style={styles.headerSubtitle}>{vehicles.length} {t('vehicles', language)} • {t('autoRefresh', language)} 10s</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerButton} onPress={() => refetch()}>
+              <Ionicons name="refresh" size={24} color="#2196F3" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutButtonHeader} onPress={handleLogout}>
+              <Ionicons name="log-out" size={24} color="#F44336" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <FlatList
+          data={vehicles}
+          renderItem={renderVehicleCard}
+          keyExtractor={(item) => item.imei}
+          contentContainerStyle={styles.list}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              colors={['#2196F3']}
+            />
+          }
+        />
+      </View>
+    );
+  }
+
+  // Map view for native (iOS/Android)
   return (
     <View style={styles.container}>
       <MapView
@@ -188,9 +310,9 @@ export default function MapScreen() {
             }}
             rotation={vehicle.angle}
             anchor={{ x: 0.5, y: 0.5 }}
-            pinColor={getMarkerColor(vehicle)}
+            pinColor={getStatusColor(vehicle)}
             title={vehicle.name}
-            description={`Speed: ${vehicle.speed.toFixed(0)} km/h - ${getStatusText(vehicle)}`}
+            description={`${t('speed', language)}: ${vehicle.speed.toFixed(0)} km/h - ${getStatusText(vehicle)}`}
             onPress={() => {
               setSelectedVehicle(vehicle.imei);
               mapRef.current?.animateToRegion({
@@ -233,11 +355,11 @@ export default function MapScreen() {
                   <View style={styles.statDivider} />
                   <View style={styles.statItem}>
                     <Text style={styles.statValue}>{vehicle.angle.toFixed(0)}°</Text>
-                    <Text style={styles.statLabel}>Direction</Text>
+                    <Text style={styles.statLabel}>{t('direction', language)}</Text>
                   </View>
                   <View style={styles.statDivider} />
                   <View style={styles.statItem}>
-                    <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
+                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(vehicle) }]} />
                     <Text style={styles.statLabel}>{getStatusText(vehicle)}</Text>
                   </View>
                 </View>
@@ -251,7 +373,7 @@ export default function MapScreen() {
                     });
                   }}
                 >
-                  <Text style={styles.detailsButtonText}>View Details</Text>
+                  <Text style={styles.detailsButtonText}>{t('vehicleDetails', language)}</Text>
                   <Ionicons name="chevron-forward" size={20} color="#2196F3" />
                 </TouchableOpacity>
               </>
@@ -297,6 +419,7 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   map: {
     flex: 1,
@@ -306,6 +429,146 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  headerButton: {
+    padding: 8,
+  },
+  logoutButtonHeader: {
+    padding: 8,
+  },
+  list: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  vehicleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  vehicleText: {
+    flex: 1,
+  },
+  vehicleName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  vehicleImei: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  cardBody: {
+    padding: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  infoItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 2,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  lastUpdate: {
+    fontSize: 12,
+    color: '#999',
+    marginLeft: 4,
   },
   loadingText: {
     marginTop: 16,
@@ -407,12 +670,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 30,
     backgroundColor: '#e0e0e0',
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginBottom: 4,
   },
   detailsButton: {
     flexDirection: 'row',
