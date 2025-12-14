@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
-import { Redirect } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '../stores/authStore';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function Index() {
+  const router = useRouter();
+  const segments = useSegments();
   const { apiKey, isLoaded, loadAuth } = useAuthStore();
 
   // Load auth on mount
@@ -13,21 +15,30 @@ export default function Index() {
     }
   }, [isLoaded, loadAuth]);
 
+  // Handle navigation based on auth state
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    const inAuthGroup = segments[0] === '(tabs)';
+
+    if (apiKey && !inAuthGroup) {
+      // User is authenticated but not in tabs, redirect to map
+      router.replace('/(tabs)/map');
+    } else if (!apiKey && inAuthGroup) {
+      // User is not authenticated but in tabs, redirect to login
+      router.replace('/login');
+    } else if (!apiKey && segments.length === 0) {
+      // User is not authenticated and on index, redirect to login
+      router.replace('/login');
+    }
+  }, [apiKey, isLoaded, segments, router]);
+
   // Show loading while checking auth
-  if (!isLoaded) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#2196F3" />
-      </View>
-    );
-  }
-
-  // Redirect based on authentication status
-  if (apiKey) {
-    return <Redirect href="/(tabs)/map" />;
-  }
-
-  return <Redirect href="/login" />;
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#2196F3" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
