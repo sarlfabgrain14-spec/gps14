@@ -118,7 +118,7 @@ export default function HistoryScreen() {
               selectedDays === days && styles.dayButtonTextActive,
             ]}
           >
-            {days} {days === 1 ? 'Day' : 'Days'}
+            {days} {days === 1 ? t('day', language) : t('days', language)}
           </Text>
         </TouchableOpacity>
       ))}
