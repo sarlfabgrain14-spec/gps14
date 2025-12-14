@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,15 +6,14 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  FlatList,
-  RefreshControl,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useRouter } from 'expo-router';
-import { format } from 'date-fns';
+import * as Location from 'expo-location';
 
 interface VehicleLocation {
   imei: string;
@@ -31,6 +30,9 @@ interface VehicleLocation {
 export default function MapScreen() {
   const router = useRouter();
   const { apiKey, logout } = useAuthStore();
+  const mapRef = useRef<MapView>(null);
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
   // Set API key
   useEffect(() => {
@@ -39,8 +41,16 @@ export default function MapScreen() {
     }
   }, [apiKey]);
 
+  // Request location permission
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      setHasLocationPermission(status === 'granted');
+    })();
+  }, []);
+
   // Fetch vehicles with auto-refresh every 10 seconds
-  const { data: vehicles, isLoading, error, refetch, isRefetching } = useQuery({
+  const { data: vehicles, isLoading, error, refetch } = useQuery({
     queryKey: ['vehicle-locations'],
     queryFn: async () => {
       const locations = await trackingApi.getObjectLocations('*');
@@ -63,6 +73,27 @@ export default function MapScreen() {
     enabled: !!apiKey,
   });
 
+  // Fit map to show all vehicles
+  useEffect(() => {
+    if (vehicles && vehicles.length > 0 && mapRef.current) {
+      const coordinates = vehicles
+        .filter((v) => v.lat && v.lng)
+        .map((v) => ({
+          latitude: v.lat,
+          longitude: v.lng,
+        }));
+
+      if (coordinates.length > 0) {
+        setTimeout(() => {
+          mapRef.current?.fitToCoordinates(coordinates, {
+            edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+            animated: true,
+          });
+        }, 500);
+      }
+    }
+  }, [vehicles]);
+
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },
@@ -77,7 +108,7 @@ export default function MapScreen() {
     ]);
   };
 
-  const getStatusColor = (vehicle: VehicleLocation) => {
+  const getMarkerColor = (vehicle: VehicleLocation) => {
     if (vehicle.speed > 0) return '#4CAF50'; // Green - moving
     return '#F44336'; // Red - stopped
   };
@@ -87,80 +118,10 @@ export default function MapScreen() {
     return 'Stopped';
   };
 
-  const formatLastUpdate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return format(new Date(dateStr), 'MMM dd, HH:mm');
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const renderVehicle = ({ item }: { item: VehicleLocation }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => {
-        router.push({
-          pathname: '/vehicle-detail',
-          params: { imei: item.imei, name: item.name },
-        });
-      }}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.vehicleInfo}>
-          <View style={[styles.statusDot, { backgroundColor: getStatusColor(item) }]} />
-          <View style={styles.vehicleText}>
-            <Text style={styles.vehicleName}>{item.name}</Text>
-            <Text style={styles.vehicleImei}>{item.imei}</Text>
-          </View>
-        </View>
-        <Ionicons name="chevron-forward" size={24} color="#ccc" />
-      </View>
-
-      <View style={styles.cardBody}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <Ionicons name="speedometer" size={18} color="#666" />
-            <Text style={styles.infoLabel}>Speed</Text>
-            <Text style={styles.infoValue}>{item.speed.toFixed(0)} km/h</Text>
-          </View>
-
-          <View style={styles.infoItem}>
-            <Ionicons name="navigate" size={18} color="#666" />
-            <Text style={styles.infoLabel}>Direction</Text>
-            <Text style={styles.infoValue}>{item.angle.toFixed(0)}°</Text>
-          </View>
-
-          <View style={styles.infoItem}>
-            <Ionicons name={getStatusText(item) === 'Moving' ? 'play-circle' : 'stop-circle'} size={18} color={getStatusColor(item)} />
-            <Text style={styles.infoLabel}>Status</Text>
-            <Text style={[styles.infoValue, { color: getStatusColor(item) }]}>
-              {getStatusText(item)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.locationRow}>
-          <Ionicons name="location" size={16} color="#999" />
-          <Text style={styles.locationText}>
-            {item.lat.toFixed(6)}, {item.lng.toFixed(6)}
-          </Text>
-        </View>
-
-        <View style={styles.footer}>
-          <Ionicons name="time-outline" size={16} color="#999" />
-          <Text style={styles.lastUpdate}>
-            Last update: {formatLastUpdate(item.dt_tracker)}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2196F3" />
+        <ActivityIndicator size=\"large\" color=\"#2196F3\" />
         <Text style={styles.loadingText}>Loading vehicles...</Text>
       </View>
     );
@@ -169,7 +130,7 @@ export default function MapScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Ionicons name="alert-circle" size={64} color="#F44336" />
+        <Ionicons name=\"alert-circle\" size={64} color=\"#F44336\" />
         <Text style={styles.errorText}>Failed to load vehicles</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
           <Text style={styles.retryButtonText}>Retry</Text>
@@ -180,56 +141,167 @@ export default function MapScreen() {
 
   if (!vehicles || vehicles.length === 0) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Live Tracking</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.headerButton} onPress={() => refetch()}>
-              <Ionicons name="refresh" size={24} color="#2196F3" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Ionicons name="log-out" size={24} color="#F44336" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.centered}>
-          <Ionicons name="car-sport-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>No vehicles found</Text>
-        </View>
+      <View style={styles.centered}>
+        <Ionicons name=\"car-sport-outline\" size={64} color=\"#ccc\" />
+        <Text style={styles.emptyText}>No vehicles found</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Live Tracking</Text>
-          <Text style={styles.headerSubtitle}>{vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} • Auto-refresh 10s</Text>
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_DEFAULT}
+        style={styles.map}
+        initialRegion={{
+          latitude: vehicles[0]?.lat || 35.3764,
+          longitude: vehicles[0]?.lng || 1.3218,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }}
+        showsUserLocation={hasLocationPermission}
+        showsMyLocationButton={hasLocationPermission}
+        showsCompass
+        showsScale
+        loadingEnabled
+      >
+        {vehicles?.map((vehicle) => (
+          <React.Fragment key={vehicle.imei}>
+            <Marker
+              coordinate={{
+                latitude: vehicle.lat,
+                longitude: vehicle.lng,
+              }}
+              rotation={vehicle.angle}
+              anchor={{ x: 0.5, y: 0.5 }}
+              onPress={() => {
+                setSelectedVehicle(vehicle.imei);
+                mapRef.current?.animateToRegion({
+                  latitude: vehicle.lat,
+                  longitude: vehicle.lng,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }, 500);
+              }}
+            >
+              <View style={styles.markerContainer}>
+                <View style={[styles.vehicleMarker, { backgroundColor: getMarkerColor(vehicle) }]}>
+                  <Ionicons name=\"car-sport\" size={20} color=\"#fff\" />
+                  <View style={[styles.directionArrow, { transform: [{ rotate: `${vehicle.angle}deg` }] }]}>
+                    <Ionicons name=\"arrow-up\" size={12} color=\"#fff\" />
+                  </View>
+                </View>
+                <View style={styles.markerLabel}>
+                  <Text style={styles.markerText}>{vehicle.name}</Text>
+                </View>
+              </View>
+            </Marker>
+            
+            {/* Add a small circle to show exact position */}
+            <Circle
+              center={{
+                latitude: vehicle.lat,
+                longitude: vehicle.lng,
+              }}
+              radius={20}
+              fillColor=\"rgba(33, 150, 243, 0.2)\"
+              strokeColor=\"rgba(33, 150, 243, 0.5)\"
+              strokeWidth={1}
+            />
+          </React.Fragment>
+        ))}
+      </MapView>
+
+      {/* Vehicle info card when selected */}
+      {selectedVehicle && vehicles && (
+        <View style={styles.infoCard}>
+          {(() => {
+            const vehicle = vehicles.find(v => v.imei === selectedVehicle);
+            if (!vehicle) return null;
+            
+            return (
+              <>
+                <View style={styles.infoHeader}>
+                  <View style={styles.infoTitleContainer}>
+                    <Ionicons name=\"car-sport\" size={24} color=\"#2196F3\" />
+                    <View style={styles.infoTitleText}>
+                      <Text style={styles.infoTitle}>{vehicle.name}</Text>
+                      <Text style={styles.infoSubtitle}>{vehicle.imei}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={() => setSelectedVehicle(null)}>
+                    <Ionicons name=\"close\" size={24} color=\"#666\" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.infoStats}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{vehicle.speed.toFixed(0)}</Text>
+                    <Text style={styles.statLabel}>km/h</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{vehicle.angle.toFixed(0)}°</Text>
+                    <Text style={styles.statLabel}>Direction</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
+                    <Text style={styles.statLabel}>{getStatusText(vehicle)}</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.detailsButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/vehicle-detail',
+                      params: { imei: vehicle.imei, name: vehicle.name },
+                    });
+                  }}
+                >
+                  <Text style={styles.detailsButtonText}>View Details</Text>
+                  <Ionicons name=\"chevron-forward\" size={20} color=\"#2196F3\" />
+                </TouchableOpacity>
+              </>
+            );
+          })()}
         </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerButton} onPress={() => refetch()}>
-            <Ionicons name="refresh" size={24} color="#2196F3" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out" size={24} color="#F44336" />
-          </TouchableOpacity>
-        </View>
+      )}
+
+      {/* Vehicle count badge */}
+      <View style={styles.badge}>
+        <Ionicons name=\"car-sport\" size={20} color=\"#fff\" />
+        <Text style={styles.badgeText}>{vehicles?.length || 0}</Text>
       </View>
 
-      <FlatList
-        data={vehicles}
-        renderItem={renderVehicle}
-        keyExtractor={(item) => item.imei}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            colors={['#2196F3']}
-          />
-        }
-      />
+      {/* Control buttons */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Ionicons name=\"log-out\" size={24} color=\"#fff\" />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.refreshButton} onPress={() => refetch()}>
+        <Ionicons name=\"refresh\" size={24} color=\"#fff\" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.centerButton}
+        onPress={() => {
+          if (vehicles && vehicles.length > 0) {
+            const coordinates = vehicles.map(v => ({
+              latitude: v.lat,
+              longitude: v.lng,
+            }));
+            mapRef.current?.fitToCoordinates(coordinates, {
+              edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
+              animated: true,
+            });
+          }
+        }}
+      >
+        <Ionicons name=\"locate\" size={24} color=\"#fff\" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -237,135 +309,9 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
-  header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  headerButton: {
-    padding: 8,
-  },
-  logoutButton: {
-    padding: 8,
-  },
-  list: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  vehicleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  map: {
     flex: 1,
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  vehicleText: {
-    flex: 1,
-  },
-  vehicleName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  vehicleImei: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 2,
-  },
-  cardBody: {
-    padding: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  infoItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 2,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-  },
-  locationText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 8,
-    fontFamily: 'monospace',
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  lastUpdate: {
-    fontSize: 12,
-    color: '#999',
-    marginLeft: 4,
   },
   centered: {
     flex: 1,
@@ -400,5 +346,199 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  markerContainer: {
+    alignItems: 'center',
+  },
+  vehicleMarker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  directionArrow: {
+    position: 'absolute',
+    top: -8,
+  },
+  markerLabel: {
+    marginTop: 4,
+    backgroundColor: '#fff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  markerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+  },
+  infoCard: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  infoTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  infoTitleText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  infoSubtitle: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  infoStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#e0e0e0',
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginBottom: 4,
+  },
+  detailsButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 12,
+  },
+  detailsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2196F3',
+    marginRight: 4,
+  },
+  badge: {
+    position: 'absolute',
+    top: 60,
+    right: 16,
+    backgroundColor: '#2196F3',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 60,
+    left: 16,
+    backgroundColor: '#F44336',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  refreshButton: {
+    position: 'absolute',
+    top: 120,
+    right: 16,
+    backgroundColor: '#4CAF50',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  centerButton: {
+    position: 'absolute',
+    top: 180,
+    right: 16,
+    backgroundColor: '#2196F3',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
