@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,14 +6,15 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  FlatList,
+  RefreshControl,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useRouter } from 'expo-router';
-import * as Location from 'expo-location';
+import { format } from 'date-fns';
 
 interface VehicleLocation {
   imei: string;
