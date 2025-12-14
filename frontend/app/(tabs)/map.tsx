@@ -121,7 +121,7 @@ export default function MapScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size=\"large\" color=\"#2196F3\" />
+        <ActivityIndicator size="large" color="#2196F3" />
         <Text style={styles.loadingText}>Loading vehicles...</Text>
       </View>
     );
@@ -130,7 +130,7 @@ export default function MapScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Ionicons name=\"alert-circle\" size={64} color=\"#F44336\" />
+        <Ionicons name="alert-circle" size={64} color="#F44336" />
         <Text style={styles.errorText}>Failed to load vehicles</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
           <Text style={styles.retryButtonText}>Retry</Text>
@@ -142,7 +142,7 @@ export default function MapScreen() {
   if (!vehicles || vehicles.length === 0) {
     return (
       <View style={styles.centered}>
-        <Ionicons name=\"car-sport-outline\" size={64} color=\"#ccc\" />
+        <Ionicons name="car-sport-outline" size={64} color="#ccc" />
         <Text style={styles.emptyText}>No vehicles found</Text>
       </View>
     );
@@ -186,9 +186,9 @@ export default function MapScreen() {
             >
               <View style={styles.markerContainer}>
                 <View style={[styles.vehicleMarker, { backgroundColor: getMarkerColor(vehicle) }]}>
-                  <Ionicons name=\"car-sport\" size={20} color=\"#fff\" />
+                  <Ionicons name="car-sport" size={20} color="#fff" />
                   <View style={[styles.directionArrow, { transform: [{ rotate: `${vehicle.angle}deg` }] }]}>
-                    <Ionicons name=\"arrow-up\" size={12} color=\"#fff\" />
+                    <Ionicons name="arrow-up" size={12} color="#fff" />
                   </View>
                 </View>
                 <View style={styles.markerLabel}>
@@ -204,8 +204,8 @@ export default function MapScreen() {
                 longitude: vehicle.lng,
               }}
               radius={20}
-              fillColor=\"rgba(33, 150, 243, 0.2)\"
-              strokeColor=\"rgba(33, 150, 243, 0.5)\"
+              fillColor="rgba(33, 150, 243, 0.2)"
+              strokeColor="rgba(33, 150, 243, 0.5)"
               strokeWidth={1}
             />
           </React.Fragment>
@@ -223,14 +223,14 @@ export default function MapScreen() {
               <>
                 <View style={styles.infoHeader}>
                   <View style={styles.infoTitleContainer}>
-                    <Ionicons name=\"car-sport\" size={24} color=\"#2196F3\" />
+                    <Ionicons name="car-sport" size={24} color="#2196F3" />
                     <View style={styles.infoTitleText}>
                       <Text style={styles.infoTitle}>{vehicle.name}</Text>
                       <Text style={styles.infoSubtitle}>{vehicle.imei}</Text>
                     </View>
                   </View>
                   <TouchableOpacity onPress={() => setSelectedVehicle(null)}>
-                    <Ionicons name=\"close\" size={24} color=\"#666\" />
+                    <Ionicons name="close" size={24} color="#666" />
                   </TouchableOpacity>
                 </View>
 
@@ -261,7 +261,7 @@ export default function MapScreen() {
                   }}
                 >
                   <Text style={styles.detailsButtonText}>View Details</Text>
-                  <Ionicons name=\"chevron-forward\" size={20} color=\"#2196F3\" />
+                  <Ionicons name="chevron-forward" size={20} color="#2196F3" />
                 </TouchableOpacity>
               </>
             );
@@ -271,17 +271,17 @@ export default function MapScreen() {
 
       {/* Vehicle count badge */}
       <View style={styles.badge}>
-        <Ionicons name=\"car-sport\" size={20} color=\"#fff\" />
+        <Ionicons name="car-sport" size={20} color="#fff" />
         <Text style={styles.badgeText}>{vehicles?.length || 0}</Text>
       </View>
 
       {/* Control buttons */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name=\"log-out\" size={24} color=\"#fff\" />
+        <Ionicons name="log-out" size={24} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.refreshButton} onPress={() => refetch()}>
-        <Ionicons name=\"refresh\" size={24} color=\"#fff\" />
+        <Ionicons name="refresh" size={24} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -299,7 +299,7 @@ export default function MapScreen() {
           }
         }}
       >
-        <Ionicons name=\"locate\" size={24} color=\"#fff\" />
+        <Ionicons name="locate" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
   );
