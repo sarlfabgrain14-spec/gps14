@@ -104,7 +104,7 @@ export default function LoginScreen() {
                   <Text style={styles.languageFlag}>{lang.flag}</Text>
                   <Text style={styles.languageOptionText}>{lang.name}</Text>
                   {language === lang.code && (
-                    <Ionicons name=\"checkmark\" size={20} color=\"#2196F3\" />
+                    <Ionicons name="checkmark" size={20} color="#2196F3" />
                   )}
                 </TouchableOpacity>
               ))}
