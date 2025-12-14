@@ -33,7 +33,13 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow GPS Tracker to use your location."
+          "locationAlwaysAndWhenInUsePermission": "Allow GPS14 to use your location."
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "useGoogleMaps": false
         }
       ],
       [
