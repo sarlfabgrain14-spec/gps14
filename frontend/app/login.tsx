@@ -113,26 +113,26 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.header}>
-          <Ionicons name=\"car-sport\" size={64} color=\"#2196F3\" />
+          <Ionicons name="car-sport" size={64} color="#2196F3" />
           <Text style={styles.title}>{t('appName', language)}</Text>
           <Text style={styles.subtitle}>{t('appSubtitle', language)}</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Ionicons name=\"person-outline\" size={20} color=\"#666\" style={styles.inputIcon} />
+            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder={t('username', language)}
               value={username}
               onChangeText={setUsernameInput}
-              autoCapitalize=\"none\"
+              autoCapitalize="none"
               editable={!loading}
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name=\"lock-closed-outline\" size={20} color=\"#666\" style={styles.inputIcon} />
+            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder={t('password', language)}
@@ -149,7 +149,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color=\"#fff\" />
+              <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.loginButtonText}>{t('login', language)}</Text>
             )}
