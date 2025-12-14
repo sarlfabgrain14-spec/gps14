@@ -59,6 +59,8 @@ export const translations = {
     // Events
     noEvents: 'No events found',
     systemEvent: 'System Event',
+    loadingEvents: 'Loading events...',
+    lastUpdate: 'Last update',
     
     // More
     features: 'Features',
