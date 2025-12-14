@@ -142,6 +142,8 @@ export const translations = {
     // Events
     noEvents: 'Aucun événement trouvé',
     systemEvent: 'Événement Système',
+    loadingEvents: 'Chargement des événements...',
+    lastUpdate: 'Dernière mise à jour',
     
     // More
     features: 'Fonctionnalités',
