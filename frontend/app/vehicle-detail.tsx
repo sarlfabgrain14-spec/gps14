@@ -11,8 +11,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { trackingApi } from '@/services/api';
-import { useAuthStore } from '@/stores/authStore';
+import { trackingApi } from '../services/api';
+import { useAuthStore } from '../stores/authStore';
 import { format } from 'date-fns';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
