@@ -36,12 +36,6 @@
         }
       ],
       [
-        "react-native-maps",
-        {
-          "useGoogleMaps": false
-        }
-      ],
-      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
