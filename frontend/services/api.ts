@@ -60,7 +60,17 @@ class TrackingAPI {
 
   // Get object locations (all vehicles or specific IMEIs)
   async getObjectLocations(imeis: string = '*') {
-    return this.executeCommand(`OBJECT_GET_LOCATIONS,${imeis}`);
+    const data = await this.executeCommand(`OBJECT_GET_LOCATIONS,${imeis}`);
+    
+    // Convert object to array if needed
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      return Object.entries(data).map(([imei, location]: [string, any]) => ({
+        imei,
+        ...location,
+      }));
+    }
+    
+    return data;
   }
 
   // Get object route history
