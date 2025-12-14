@@ -156,7 +156,7 @@ export default function VehiclesScreen() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#2196F3" />
-        <Text style={styles.loadingText}>Loading vehicles...</Text>
+        <Text style={styles.loadingText}>{t('loadingVehicles', language)}</Text>
       </View>
     );
   }
@@ -165,9 +165,9 @@ export default function VehiclesScreen() {
     return (
       <View style={styles.centered}>
         <Ionicons name="alert-circle" size={64} color="#F44336" />
-        <Text style={styles.errorText}>Failed to load vehicles</Text>
+        <Text style={styles.errorText}>{t('failedToLoad', language)}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.retryButtonText}>{t('retry', language)}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -177,7 +177,7 @@ export default function VehiclesScreen() {
     return (
       <View style={styles.centered}>
         <Ionicons name="car-sport-outline" size={64} color="#ccc" />
-        <Text style={styles.emptyText}>No vehicles found</Text>
+        <Text style={styles.emptyText}>{t('noVehicles', language)}</Text>
       </View>
     );
   }
