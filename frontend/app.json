@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GPS Tracker",
-    "slug": "gps-tracker",
+    "name": "GPS14",
+    "slug": "gps14",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
