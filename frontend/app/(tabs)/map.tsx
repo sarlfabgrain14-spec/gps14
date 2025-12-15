@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,7 +15,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useLanguageStore } from '../../stores/languageStore';
 import { t } from '../../utils/translations';
 import { useRouter } from 'expo-router';
-import { NativeMapView, NativeMarker, PROVIDER_DEFAULT } from '../../components/MapViewComponent';
+import LeafletMap from '../../components/LeafletMap';
 
 interface VehicleLocation {
   imei: string;
@@ -31,7 +31,6 @@ export default function MapScreen() {
   const router = useRouter();
   const { apiKey, logout } = useAuthStore();
   const { language } = useLanguageStore();
-  const mapRef = useRef<any>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,22 +59,6 @@ export default function MapScreen() {
     refetchInterval: 10000,
     enabled: !!apiKey,
   });
-
-  useEffect(() => {
-    if (vehicles && vehicles.length > 0 && mapRef.current && Platform.OS !== 'web') {
-      const coordinates = vehicles.map((v) => ({
-        latitude: v.lat,
-        longitude: v.lng,
-      }));
-
-      setTimeout(() => {
-        mapRef.current?.fitToCoordinates(coordinates, {
-          edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-          animated: true,
-        });
-      }, 500);
-    }
-  }, [vehicles]);
 
   const handleLogout = () => {
     Alert.alert(t('logout', language), t('logoutConfirm', language), [
@@ -131,55 +114,30 @@ export default function MapScreen() {
     );
   }
 
-  // Map view (platform-specific component handles native vs web)
+  // Prepare vehicles data for map
+  const mapVehicles = vehicles.map((vehicle) => ({
+    imei: vehicle.imei,
+    name: vehicle.name,
+    lat: vehicle.lat,
+    lng: vehicle.lng,
+    speed: vehicle.speed,
+    status: getStatusText(vehicle),
+    color: getMarkerColor(vehicle),
+  }));
+
   return (
     <View style={styles.container}>
-      <NativeMapView
-        ref={mapRef}
-        provider={PROVIDER_DEFAULT}
-        style={styles.map}
-        initialRegion={{
-          latitude: vehicles[0]?.lat || 35.3764,
-          longitude: vehicles[0]?.lng || 1.3218,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-        showsUserLocation
-        showsMyLocationButton
-        showsCompass
-        showsScale
-      >
-        {vehicles?.map((vehicle) => (
-          <NativeMarker
-            key={vehicle.imei}
-            coordinate={{
-              latitude: vehicle.lat,
-              longitude: vehicle.lng,
-            }}
-            pinColor={getMarkerColor(vehicle)}
-            title={vehicle.name}
-            description={`${t('speed', language)}: ${vehicle.speed.toFixed(0)} km/h - ${getStatusText(vehicle)}`}
-            onPress={() => {
-              setSelectedVehicle(vehicle.imei);
-              if (Platform.OS !== 'web' && mapRef.current) {
-                mapRef.current.animateToRegion({
-                  latitude: vehicle.lat,
-                  longitude: vehicle.lng,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }, 500);
-              }
-            }}
-          />
-        ))}
-      </NativeMapView>
+      <LeafletMap
+        vehicles={mapVehicles}
+        onMarkerClick={(imei) => setSelectedVehicle(imei)}
+      />
 
       {selectedVehicle && vehicles && (
         <View style={styles.infoCard}>
           {(() => {
-            const vehicle = vehicles.find(v => v.imei === selectedVehicle);
+            const vehicle = vehicles.find((v) => v.imei === selectedVehicle);
             if (!vehicle) return null;
-            
+
             return (
               <>
                 <View style={styles.infoHeader}>
@@ -207,7 +165,12 @@ export default function MapScreen() {
                   </View>
                   <View style={styles.statDivider} />
                   <View style={styles.statItem}>
-                    <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
+                    <View
+                      style={[
+                        styles.statusDot,
+                        { backgroundColor: getMarkerColor(vehicle) },
+                      ]}
+                    />
                     <Text style={styles.statLabel}>{getStatusText(vehicle)}</Text>
                   </View>
                 </View>
@@ -221,7 +184,9 @@ export default function MapScreen() {
                     });
                   }}
                 >
-                  <Text style={styles.detailsButtonText}>{t('vehicleDetails', language)}</Text>
+                  <Text style={styles.detailsButtonText}>
+                    {t('vehicleDetails', language)}
+                  </Text>
                   <Ionicons name="chevron-forward" size={20} color="#2196F3" />
                 </TouchableOpacity>
               </>
@@ -242,33 +207,12 @@ export default function MapScreen() {
       <TouchableOpacity style={styles.refreshButton} onPress={() => refetch()}>
         <Ionicons name="refresh" size={24} color="#fff" />
       </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.centerButton}
-        onPress={() => {
-          if (vehicles && vehicles.length > 0) {
-            const coordinates = vehicles.map(v => ({
-              latitude: v.lat,
-              longitude: v.lng,
-            }));
-            mapRef.current?.fitToCoordinates(coordinates, {
-              edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-              animated: true,
-            });
-          }
-        }}
-      >
-        <Ionicons name="locate" size={24} color="#fff" />
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  map: {
     flex: 1,
   },
   centered: {
@@ -434,22 +378,6 @@ const styles = StyleSheet.create({
     top: 120,
     right: 16,
     backgroundColor: '#4CAF50',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  centerButton: {
-    position: 'absolute',
-    top: 180,
-    right: 16,
-    backgroundColor: '#2196F3',
     width: 48,
     height: 48,
     borderRadius: 24,
