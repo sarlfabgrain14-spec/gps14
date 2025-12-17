@@ -17,6 +17,7 @@ interface LeafletMapProps {
   onMarkerClick?: (imei: string) => void;
   center?: [number, number];
   zoom?: number;
+  focusedVehicleImei?: string | null;
 }
 
 export const LeafletMap: React.FC<LeafletMapProps> = ({
