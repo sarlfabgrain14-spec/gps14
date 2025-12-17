@@ -60,20 +60,43 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
       maxZoom: 19
     }).addTo(map);
     
-    // Add markers for each vehicle
+    // Add markers for each vehicle with arrow icons
     vehicles.forEach(vehicle => {
+      // Create arrow SVG pointing in the direction of vehicle movement
+      const arrowSvg = \`
+        <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg" 
+             style="transform: rotate(\${vehicle.angle}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+          <path d="M20 5 L35 30 L25 30 L25 45 L15 45 L15 30 L5 30 Z" 
+                fill="\${vehicle.color}" 
+                stroke="white" 
+                stroke-width="2"/>
+        </svg>
+      \`;
+      
+      // Add vehicle name below the arrow
       const icon = L.divIcon({
-        className: 'custom-marker',
-        html: \`<div style="
-          background-color: \${vehicle.color};
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          border: 4px solid white;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-        "></div>\`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14]
+        className: 'custom-vehicle-marker',
+        html: \`
+          <div style="text-align: center; width: 80px; margin-left: -20px;">
+            \${arrowSvg}
+            <div style="
+              font-family: Arial, sans-serif;
+              font-size: 10px;
+              font-weight: bold;
+              color: #333;
+              background-color: rgba(255,255,255,0.9);
+              padding: 2px 4px;
+              border-radius: 3px;
+              margin-top: -5px;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">\${vehicle.name}</div>
+          </div>
+        \`,
+        iconSize: [40, 65],
+        iconAnchor: [20, 45]
       });
       
       const marker = L.marker([vehicle.lat, vehicle.lng], { icon })
@@ -82,6 +105,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
           <div style="min-width: 150px; font-family: Arial, sans-serif;">
             <strong style="font-size: 16px; color: #333;">\${vehicle.name}</strong><br/>
             <span style="font-size: 14px; color: #666;">Vitesse: \${vehicle.speed.toFixed(0)} km/h</span><br/>
+            <span style="font-size: 14px; color: #666;">Direction: \${vehicle.angle.toFixed(0)}°</span><br/>
             <span style="font-size: 14px; color: #666;">Statut: \${vehicle.status}</span>
           </div>
         \`);
