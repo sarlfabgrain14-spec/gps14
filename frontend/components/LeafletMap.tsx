@@ -10,6 +10,7 @@ interface VehicleMarker {
   speed: number;
   status: string;
   color: string;
+  angle: number;
 }
 
 interface LeafletMapProps {
