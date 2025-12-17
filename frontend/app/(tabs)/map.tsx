@@ -125,21 +125,28 @@ export default function MapScreen() {
   }
 
   // Prepare vehicles data for map
-  const mapVehicles = vehicles.map((vehicle) => ({
+  let mapVehicles = vehicles.map((vehicle) => ({
     imei: vehicle.imei,
     name: vehicle.name,
     lat: vehicle.lat,
     lng: vehicle.lng,
     speed: vehicle.speed,
+    angle: vehicle.angle,
     status: getStatusText(vehicle),
     color: getMarkerColor(vehicle),
   }));
+
+  // Filter to show only focused vehicle if specified
+  if (focusedVehicleImei) {
+    mapVehicles = mapVehicles.filter(v => v.imei === focusedVehicleImei);
+  }
 
   return (
     <View style={styles.container}>
       <LeafletMap
         vehicles={mapVehicles}
         onMarkerClick={(imei) => setSelectedVehicle(imei)}
+        focusedVehicleImei={focusedVehicleImei}
       />
 
       {selectedVehicle && vehicles && (
