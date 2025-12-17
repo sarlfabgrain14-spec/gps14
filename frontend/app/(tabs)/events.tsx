@@ -22,7 +22,11 @@ interface Event {
   name: string;
   event: string;
   dt_tracker: string;
+  dt_server?: string;
   message?: string;
+  lat?: number;
+  lng?: number;
+  location?: string;
 }
 
 export default function EventsScreen() {
