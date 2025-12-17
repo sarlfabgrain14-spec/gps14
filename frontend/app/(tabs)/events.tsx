@@ -109,7 +109,18 @@ export default function EventsScreen() {
   };
 
   const renderEvent = ({ item }: { item: Event }) => (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      onPress={() => {
+        // Navigate to map if we have coordinates
+        if (item.lat && item.lng && item.imei) {
+          router.push({
+            pathname: '/(tabs)/map',
+            params: { vehicleImei: item.imei },
+          });
+        }
+      }}
+    >
       <View style={styles.cardHeader}>
         <View
           style={[
@@ -128,12 +139,32 @@ export default function EventsScreen() {
           <Text style={styles.vehicleName}>{item.name}</Text>
         </View>
       </View>
+      
       {item.message && <Text style={styles.message}>{item.message}</Text>}
+      
       <View style={styles.footer}>
-        <Ionicons name="time-outline" size={16} color="#999" />
-        <Text style={styles.timestamp}>{formatDate(item.dt_tracker)}</Text>
+        <View style={styles.eventFooterLeft}>
+          <Ionicons name="time-outline" size={16} color="#999" />
+          <Text style={styles.timestamp}>{formatDate(item.dt_tracker)}</Text>
+        </View>
+        {item.location && (
+          <View style={styles.eventLocation}>
+            <Ionicons name="location-outline" size={14} color="#999" />
+            <Text style={styles.eventLocationText} numberOfLines={1}>
+              {item.location}
+            </Text>
+          </View>
+        )}
+        {item.lat && item.lng && (
+          <View style={styles.eventCoordinates}>
+            <Ionicons name="navigate-outline" size={14} color="#2196F3" />
+            <Text style={styles.eventCoordinatesText}>
+              {item.lat.toFixed(5)}, {item.lng.toFixed(5)}
+            </Text>
+          </View>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const TimeRangeSelector = () => (
