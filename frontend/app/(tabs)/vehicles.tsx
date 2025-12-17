@@ -104,9 +104,10 @@ export default function VehiclesScreen() {
     <TouchableOpacity
       style={styles.card}
       onPress={() => {
+        // Navigate to map tab with the vehicle focused
         router.push({
-          pathname: '/vehicle-detail',
-          params: { imei: item.imei, name: item.name },
+          pathname: '/(tabs)/map',
+          params: { vehicleImei: item.imei },
         });
       }}
     >
