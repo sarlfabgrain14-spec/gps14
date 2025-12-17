@@ -32,6 +32,7 @@ export default function MapScreen() {
   const { apiKey, logout } = useAuthStore();
   const { language } = useLanguageStore();
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [focusedVehicleImei, setFocusedVehicleImei] = useState<string | null>(null);
 
   useEffect(() => {
     if (apiKey) {
