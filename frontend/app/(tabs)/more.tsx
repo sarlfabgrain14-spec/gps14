@@ -161,16 +161,10 @@ export default function MoreScreen() {
         <Text style={styles.sectionTitle}>Settings</Text>
         <View style={styles.card}>
           <MenuItem
-            icon="notifications"
-            title="Notifications"
-            subtitle="Manage alerts"
-            onPress={() => Alert.alert('Coming Soon', 'Notification settings')}
-          />
-          <MenuItem
             icon="settings"
-            title="Preferences"
-            subtitle="App settings"
-            onPress={() => Alert.alert('Coming Soon', 'App preferences')}
+            title="Préférences"
+            subtitle="Notifications et paramètres"
+            onPress={() => router.push('/preferences')}
           />
         </View>
       </View>
