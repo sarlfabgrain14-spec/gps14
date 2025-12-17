@@ -29,6 +29,7 @@ interface VehicleLocation {
 
 export default function MapScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ vehicleImei?: string }>();
   const { apiKey, logout } = useAuthStore();
   const { language } = useLanguageStore();
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
@@ -39,6 +40,14 @@ export default function MapScreen() {
       trackingApi.setApiKey(apiKey);
     }
   }, [apiKey]);
+
+  // Set focused vehicle from params
+  useEffect(() => {
+    if (params.vehicleImei) {
+      setFocusedVehicleImei(params.vehicleImei);
+      setSelectedVehicle(params.vehicleImei);
+    }
+  }, [params.vehicleImei]);
 
   const { data: vehicles, isLoading, error, refetch } = useQuery({
     queryKey: ['vehicle-locations'],
