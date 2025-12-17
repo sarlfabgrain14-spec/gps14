@@ -31,6 +31,7 @@ interface Event {
 }
 
 export default function EventsScreen() {
+  const router = useRouter();
   const { apiKey } = useAuthStore();
   const { language } = useLanguageStore();
   const [timeRange, setTimeRange] = useState<'30m' | '12h' | '7d'>('12h');
