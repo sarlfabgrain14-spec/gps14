@@ -46,7 +46,7 @@ export default function HistoryScreen() {
       const dateFromStr = format(startOfDay(dateFrom), 'yyyy-MM-dd HH:mm:ss');
       const dateToStr = format(endOfDay(dateTo), 'yyyy-MM-dd HH:mm:ss');
       
-      const route = await trackingApi.getObjectRoute(params.imei, dateFrom, dateTo, 5);
+      const route = await trackingApi.getObjectRoute(params.imei, dateFromStr, dateToStr, 5);
       
       if (route && Array.isArray(route)) {
         const points: RoutePoint[] = route.map((point: any) => ({
