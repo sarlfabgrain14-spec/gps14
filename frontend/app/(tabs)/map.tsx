@@ -14,7 +14,7 @@ import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useLanguageStore } from '../../stores/languageStore';
 import { t } from '../../utils/translations';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import LeafletMap from '../../components/LeafletMap';
 
 interface VehicleLocation {
