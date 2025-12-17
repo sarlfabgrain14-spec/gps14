@@ -14,6 +14,7 @@ import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useLanguageStore } from '../../stores/languageStore';
 import { t } from '../../utils/translations';
+import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 
 interface Event {
