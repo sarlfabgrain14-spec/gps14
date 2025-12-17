@@ -136,6 +136,12 @@ export default function MoreScreen() {
         <Text style={styles.sectionTitle}>Tracking</Text>
         <View style={styles.card}>
           <MenuItem
+            icon="map"
+            title="Historique des Parcours"
+            subtitle="Voir les trajets par véhicule et période"
+            onPress={() => router.push('/route-history')}
+          />
+          <MenuItem
             icon="construct"
             title="Maintenance"
             subtitle="Vehicle maintenance logs"
@@ -146,12 +152,6 @@ export default function MoreScreen() {
             title="Expenses"
             subtitle="Track vehicle expenses"
             onPress={() => Alert.alert('Coming Soon', 'Expense tracking')}
-          />
-          <MenuItem
-            icon="clipboard"
-            title="Tasks"
-            subtitle="Manage vehicle tasks"
-            onPress={() => Alert.alert('Coming Soon', 'Task management')}
           />
         </View>
       </View>
