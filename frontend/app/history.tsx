@@ -41,10 +41,10 @@ export default function HistoryScreen() {
   }, [apiKey]);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['vehicle-route', params.imei, selectedDays],
+    queryKey: ['vehicle-route', params.imei, selectedDays, params.dateFrom, params.dateTo],
     queryFn: async () => {
-      const dateFrom = format(startOfDay(subDays(new Date(), selectedDays)), 'yyyy-MM-dd HH:mm:ss');
-      const dateTo = format(endOfDay(new Date()), 'yyyy-MM-dd HH:mm:ss');
+      const dateFromStr = format(startOfDay(dateFrom), 'yyyy-MM-dd HH:mm:ss');
+      const dateToStr = format(endOfDay(dateTo), 'yyyy-MM-dd HH:mm:ss');
       
       const route = await trackingApi.getObjectRoute(params.imei, dateFrom, dateTo, 5);
       
