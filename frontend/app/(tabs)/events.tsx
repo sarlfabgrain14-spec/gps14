@@ -52,14 +52,26 @@ export default function EventsScreen() {
         data = await trackingApi.getLastEvents();
       }
 
-      if (Array.isArray(data) && data.length > 0) {
-        return data.map((event: any, index: number) => ({
-          id: `${event.imei}-${event.dt_tracker}-${index}`,
-          imei: event.imei,
-          name: event.name || event.imei || 'Unknown Vehicle',
-          event: event.event || event.type || 'System Event',
-          dt_tracker: event.dt_tracker || event.dt_server || new Date().toISOString(),
-          message: event.message || event.msg || '',
+      // Handle both array and object responses
+      let eventsArray = [];
+      if (Array.isArray(data)) {
+        eventsArray = data;
+      } else if (data && typeof data === 'object') {
+        eventsArray = Object.values(data);
+      }
+
+      if (eventsArray.length > 0) {
+        return eventsArray.map((event: any, index: number) => ({
+          id: `${event.imei || event.id || index}-${event.dt_tracker || event.dt_server || Date.now()}-${index}`,
+          imei: event.imei || event.object_id || '',
+          name: event.object_name || event.name || event.vehicle_name || `Véhicule ${event.imei || 'Inconnu'}`,
+          event: event.event_name || event.event || event.type || event.alert_type || 'Événement système',
+          dt_tracker: event.dt_tracker || event.dt_server || event.date || event.timestamp || new Date().toISOString(),
+          dt_server: event.dt_server || event.dt_tracker,
+          message: event.message || event.msg || event.description || event.alert_text || '',
+          lat: event.lat ? parseFloat(event.lat) : undefined,
+          lng: event.lng ? parseFloat(event.lng) : undefined,
+          location: event.location || event.address || '',
         }));
       }
       return [];
