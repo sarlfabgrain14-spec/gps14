@@ -224,6 +224,19 @@ export default function MapScreen() {
       <TouchableOpacity style={styles.refreshButton} onPress={() => refetch()}>
         <Ionicons name="refresh" size={24} color="#fff" />
       </TouchableOpacity>
+
+      {focusedVehicleImei && (
+        <TouchableOpacity
+          style={styles.showAllButton}
+          onPress={() => {
+            setFocusedVehicleImei(null);
+            setSelectedVehicle(null);
+          }}
+        >
+          <Ionicons name="apps" size={24} color="#fff" />
+          <Text style={styles.showAllText}>{t('vehicles', language)}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
