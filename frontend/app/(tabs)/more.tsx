@@ -172,7 +172,7 @@ export default function MoreScreen() {
       {/* About Section */}
       <View style={styles.section}>
         <View style={styles.card}>
-          <MenuItem icon="information-circle" title="About" subtitle="App version 1.0.0" />
+          <MenuItem icon="information-circle" title="About" subtitle="App version 2.0.1" />
           <MenuItem
             icon="help-circle"
             title="Help & Support"
