@@ -348,6 +348,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   footer: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  eventFooterLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -355,6 +359,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     marginLeft: 4,
+  },
+  eventLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  eventLocationText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 4,
+    flex: 1,
+  },
+  eventCoordinates: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  eventCoordinatesText: {
+    fontSize: 12,
+    color: '#2196F3',
+    marginLeft: 4,
+    fontFamily: 'monospace',
   },
   centered: {
     flex: 1,
