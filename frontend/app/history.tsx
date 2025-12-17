@@ -25,10 +25,14 @@ interface RoutePoint {
 }
 
 export default function HistoryScreen() {
-  const params = useLocalSearchParams<{ imei: string; name: string }>();
+  const params = useLocalSearchParams<{ imei: string; name: string; dateFrom?: string; dateTo?: string }>();
   const { apiKey } = useAuthStore();
   const { language } = useLanguageStore();
   const [selectedDays, setSelectedDays] = useState(1);
+  
+  // Use provided dates if available, otherwise use selectedDays
+  const dateFrom = params.dateFrom ? new Date(params.dateFrom) : subDays(new Date(), selectedDays);
+  const dateTo = params.dateTo ? new Date(params.dateTo) : new Date();
 
   useEffect(() => {
     if (apiKey) {
