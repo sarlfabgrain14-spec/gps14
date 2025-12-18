@@ -293,6 +293,13 @@ export default function MapScreen() {
         <Ionicons name="refresh" size={24} color="#fff" />
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.mapTypeButton}
+        onPress={() => setShowMapSelector(true)}
+      >
+        <Ionicons name="layers" size={24} color="#fff" />
+      </TouchableOpacity>
+
       {focusedVehicleImei && (
         <TouchableOpacity
           style={styles.showAllButton}
