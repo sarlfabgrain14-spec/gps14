@@ -64,12 +64,12 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     vehicles.forEach(vehicle => {
       // Create arrow SVG pointing in the direction of vehicle movement
       const arrowSvg = \`
-        <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg" 
-             style="transform: rotate(\${vehicle.angle}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-          <path d="M20 5 L35 30 L25 30 L25 45 L15 45 L15 30 L5 30 Z" 
+        <svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg" 
+             style="transform: rotate(\${vehicle.angle}deg); filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));">
+          <path d="M12 3 L21 18 L15 18 L15 27 L9 27 L9 18 L3 18 Z" 
                 fill="\${vehicle.color}" 
                 stroke="white" 
-                stroke-width="2"/>
+                stroke-width="1.5"/>
         </svg>
       \`;
       
@@ -77,26 +77,26 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
       const icon = L.divIcon({
         className: 'custom-vehicle-marker',
         html: \`
-          <div style="text-align: center; width: 80px; margin-left: -20px;">
+          <div style="text-align: center; width: 60px; margin-left: -18px;">
             \${arrowSvg}
             <div style="
               font-family: Arial, sans-serif;
-              font-size: 10px;
+              font-size: 9px;
               font-weight: bold;
               color: #333;
-              background-color: rgba(255,255,255,0.9);
-              padding: 2px 4px;
+              background-color: rgba(255,255,255,0.95);
+              padding: 1px 3px;
               border-radius: 3px;
-              margin-top: -5px;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+              margin-top: -3px;
+              box-shadow: 0 1px 2px rgba(0,0,0,0.2);
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
             ">\${vehicle.name}</div>
           </div>
         \`,
-        iconSize: [40, 65],
-        iconAnchor: [20, 45]
+        iconSize: [24, 45],
+        iconAnchor: [12, 30]
       });
       
       const marker = L.marker([vehicle.lat, vehicle.lng], { icon })
