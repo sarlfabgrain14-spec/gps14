@@ -28,11 +28,39 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   center = [35.3764, 1.3218],
   zoom = 13,
   focusedVehicleImei = null,
+  mapType = 'leaflet',
 }) => {
   // Generate HTML for Leaflet map
   const generateMapHTML = () => {
     const vehiclesJSON = JSON.stringify(vehicles);
     const centerJSON = JSON.stringify(vehicles && vehicles.length > 0 ? [vehicles[0].lat, vehicles[0].lng] : center);
+
+    // Define tile layers based on map type
+    let tileLayerConfig = '';
+    if (mapType === 'arcgis') {
+      tileLayerConfig = `
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© Esri, Maxar, Earthstar Geographics',
+          maxZoom: 19
+        }).addTo(map);
+      `;
+    } else if (mapType === 'mapbox') {
+      tileLayerConfig = `
+        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+          attribution: '© Mapbox © OpenStreetMap',
+          maxZoom: 19,
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(map);
+      `;
+    } else {
+      tileLayerConfig = `
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(map);
+      `;
+    }
 
     return `
 <!DOCTYPE html>
@@ -55,11 +83,8 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     // Initialize map
     const map = L.map('map').setView(center, ${zoom});
     
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(map);
+    // Add selected tile layer
+    ${tileLayerConfig}
     
     // Add markers for each vehicle with arrow icons
     vehicles.forEach(vehicle => {
