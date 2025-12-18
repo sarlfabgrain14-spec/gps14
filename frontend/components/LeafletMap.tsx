@@ -19,6 +19,7 @@ interface LeafletMapProps {
   center?: [number, number];
   zoom?: number;
   focusedVehicleImei?: string | null;
+  mapType?: 'leaflet' | 'arcgis' | 'mapbox';
 }
 
 export const LeafletMap: React.FC<LeafletMapProps> = ({
