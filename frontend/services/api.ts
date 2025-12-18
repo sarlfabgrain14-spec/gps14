@@ -74,8 +74,8 @@ class TrackingAPI {
   }
 
   // Get object route history
-  async getObjectRoute(imei: string, dateFrom: string, dateTo: string, stopDuration: number = 5) {
-    return this.executeCommand(`OBJECT_GET_ROUTE,${imei},${dateFrom},${dateTo},${stopDuration}`);
+  async getObjectRoute(imei: string, dateFrom: string, dateTo: string) {
+    return this.executeCommand(`OBJECT_GET_ROUTE,${imei},${dateFrom},${dateTo},1`);
   }
 
   // Get object messages
