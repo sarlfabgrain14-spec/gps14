@@ -138,8 +138,12 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
       });
     });
     
-    // Fit bounds to show all vehicles
-    if (vehicles.length > 0) {
+    // Fit bounds to show all vehicles or zoom to focused vehicle
+    if (vehicles.length === 1) {
+      // Single vehicle (focused) - zoom closer
+      map.setView([vehicles[0].lat, vehicles[0].lng], 16);
+    } else if (vehicles.length > 0) {
+      // Multiple vehicles - fit bounds
       const bounds = vehicles.map(v => [v.lat, v.lng]);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
