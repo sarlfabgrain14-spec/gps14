@@ -194,20 +194,6 @@ export default function MapScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.mapOption, mapType === 'mapbox' && styles.mapOptionSelected]}
-              onPress={() => {
-                setMapType('mapbox');
-                setShowMapSelector(false);
-              }}
-            >
-              <Ionicons name="satellite" size={24} color={mapType === 'mapbox' ? '#2196F3' : '#666'} />
-              <Text style={[styles.mapOptionText, mapType === 'mapbox' && styles.mapOptionTextSelected]}>
-                Mapbox Satellite
-              </Text>
-              {mapType === 'mapbox' && <Ionicons name="checkmark-circle" size={24} color="#2196F3" />}
-            </TouchableOpacity>
-
-            <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setShowMapSelector(false)}
             >
