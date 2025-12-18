@@ -151,7 +151,71 @@ export default function MapScreen() {
         vehicles={mapVehicles}
         onMarkerClick={(imei) => setSelectedVehicle(imei)}
         focusedVehicleImei={focusedVehicleImei}
+        mapType={mapType}
       />
+
+      {/* Map Type Selector Modal */}
+      <Modal
+        visible={showMapSelector}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowMapSelector(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Type de Carte</Text>
+            
+            <TouchableOpacity
+              style={[styles.mapOption, mapType === 'leaflet' && styles.mapOptionSelected]}
+              onPress={() => {
+                setMapType('leaflet');
+                setShowMapSelector(false);
+              }}
+            >
+              <Ionicons name="map-outline" size={24} color={mapType === 'leaflet' ? '#2196F3' : '#666'} />
+              <Text style={[styles.mapOptionText, mapType === 'leaflet' && styles.mapOptionTextSelected]}>
+                OpenStreetMap (Standard)
+              </Text>
+              {mapType === 'leaflet' && <Ionicons name="checkmark-circle" size={24} color="#2196F3" />}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.mapOption, mapType === 'arcgis' && styles.mapOptionSelected]}
+              onPress={() => {
+                setMapType('arcgis');
+                setShowMapSelector(false);
+              }}
+            >
+              <Ionicons name="earth" size={24} color={mapType === 'arcgis' ? '#2196F3' : '#666'} />
+              <Text style={[styles.mapOptionText, mapType === 'arcgis' && styles.mapOptionTextSelected]}>
+                ArcGIS Imagerie
+              </Text>
+              {mapType === 'arcgis' && <Ionicons name="checkmark-circle" size={24} color="#2196F3" />}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.mapOption, mapType === 'mapbox' && styles.mapOptionSelected]}
+              onPress={() => {
+                setMapType('mapbox');
+                setShowMapSelector(false);
+              }}
+            >
+              <Ionicons name="satellite" size={24} color={mapType === 'mapbox' ? '#2196F3' : '#666'} />
+              <Text style={[styles.mapOptionText, mapType === 'mapbox' && styles.mapOptionTextSelected]}>
+                Mapbox Satellite
+              </Text>
+              {mapType === 'mapbox' && <Ionicons name="checkmark-circle" size={24} color="#2196F3" />}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowMapSelector(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {selectedVehicle && vehicles && (
         <View style={styles.infoCard}>
