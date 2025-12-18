@@ -6,14 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { trackingApi } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { useLanguageStore } from '../stores/languageStore';
-import { t } from '../utils/translations';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 
@@ -27,7 +28,7 @@ export default function RouteHistoryScreen() {
   const { apiKey } = useAuthStore();
   const { language } = useLanguageStore();
   
-  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<string>('');
   const [dateFrom, setDateFrom] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000));
   const [dateTo, setDateTo] = useState(new Date());
   const [showDateFromPicker, setShowDateFromPicker] = useState(false);
@@ -40,7 +41,7 @@ export default function RouteHistoryScreen() {
   }, [apiKey]);
 
   // Get list of vehicles
-  const { data: vehicles } = useQuery({
+  const { data: vehicles, isLoading } = useQuery({
     queryKey: ['vehicles-for-history'],
     queryFn: async () => {
       const data = await trackingApi.getUserObjects();
@@ -73,7 +74,7 @@ export default function RouteHistoryScreen() {
     });
   };
 
-  if (!vehicles) {
+  if (isLoading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#2196F3" />
@@ -95,31 +96,21 @@ export default function RouteHistoryScreen() {
         <Text style={styles.sectionTitle}>
           <Ionicons name="car-sport" size={18} /> Sélectionner un véhicule
         </Text>
-        <View style={styles.vehicleList}>
-          {vehicles.map((vehicle: Vehicle) => (
-            <TouchableOpacity
-              key={vehicle.imei}
-              style={[
-                styles.vehicleOption,
-                selectedVehicle === vehicle.imei && styles.vehicleOptionSelected,
-              ]}
-              onPress={() => setSelectedVehicle(vehicle.imei)}
-            >
-              <Ionicons
-                name={selectedVehicle === vehicle.imei ? 'radio-button-on' : 'radio-button-off'}
-                size={24}
-                color={selectedVehicle === vehicle.imei ? '#2196F3' : '#999'}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedVehicle}
+            onValueChange={(itemValue) => setSelectedVehicle(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="-- Choisir un véhicule --" value="" />
+            {vehicles && vehicles.map((vehicle: Vehicle) => (
+              <Picker.Item 
+                key={vehicle.imei} 
+                label={vehicle.name} 
+                value={vehicle.imei} 
               />
-              <Text
-                style={[
-                  styles.vehicleName,
-                  selectedVehicle === vehicle.imei && styles.vehicleNameSelected,
-                ]}
-              >
-                {vehicle.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+            ))}
+          </Picker>
         </View>
       </View>
 
@@ -262,29 +253,16 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 16,
   },
-  vehicleList: {
-    gap: 12,
-  },
-  vehicleOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
+  pickerContainer: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
   },
-  vehicleOptionSelected: {
-    borderColor: '#2196F3',
-    backgroundColor: '#E3F2FD',
-  },
-  vehicleName: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 12,
-  },
-  vehicleNameSelected: {
-    color: '#2196F3',
-    fontWeight: '600',
+  picker: {
+    height: 50,
+    width: '100%',
   },
   dateContainer: {
     marginBottom: 16,
