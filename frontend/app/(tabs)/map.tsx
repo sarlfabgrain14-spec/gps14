@@ -34,8 +34,10 @@ export default function MapScreen() {
   const params = useLocalSearchParams<{ vehicleImei?: string }>();
   const { apiKey, logout } = useAuthStore();
   const { language } = useLanguageStore();
+  const { mapType, setMapType } = useMapStore();
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [focusedVehicleImei, setFocusedVehicleImei] = useState<string | null>(null);
+  const [showMapSelector, setShowMapSelector] = useState(false);
 
   useEffect(() => {
     if (apiKey) {
