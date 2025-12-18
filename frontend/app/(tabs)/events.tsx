@@ -45,14 +45,59 @@ export default function EventsScreen() {
   const { data: events, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['events', timeRange],
     queryFn: async () => {
-      let data;
+      // Calculate date range based on timeRange
+      const now = new Date();
+      let dateFrom: Date;
+      
       if (timeRange === '30m') {
-        data = await trackingApi.getLastEvents30M();
-      } else if (timeRange === '7d') {
-        data = await trackingApi.getLastEvents7D();
+        dateFrom = new Date(now.getTime() - 30 * 60 * 1000);
+      } else if (timeRange === '12h') {
+        dateFrom = new Date(now.getTime() - 12 * 60 * 60 * 1000);
       } else {
-        data = await trackingApi.getLastEvents();
+        dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       }
+      
+      // Format dates for API
+      const dateFromStr = format(dateFrom, 'yyyy-MM-dd HH:mm:ss');
+      const dateToStr = format(now, 'yyyy-MM-dd HH:mm:ss');
+      
+      // Get all vehicles first
+      const vehicles = await trackingApi.getUserObjects();
+      if (!Array.isArray(vehicles) || vehicles.length === 0) {
+        return [];
+      }
+      
+      // Get events for all vehicles
+      const allEvents = [];
+      for (const vehicle of vehicles) {
+        try {
+          const data = await trackingApi.getObjectEvents(vehicle.imei, dateFromStr, dateToStr);
+          
+          if (data) {
+            allEvents.push({ vehicleImei: vehicle.imei, vehicleName: vehicle.name, events: data });
+          }
+        } catch (err) {
+          console.log(`Error fetching events for ${vehicle.imei}:`, err);
+        }
+      }
+      
+      // Flatten and return
+      let data = allEvents.flatMap(v => {
+        if (Array.isArray(v.events)) {
+          return v.events.map((e: any) => ({
+            ...e,
+            imei: v.vehicleImei,
+            name: v.vehicleName,
+          }));
+        } else if (v.events && typeof v.events === 'object') {
+          return Object.values(v.events).map((e: any) => ({
+            ...e,
+            imei: v.vehicleImei,
+            name: v.vehicleName,
+          }));
+        }
+        return [];
+      });
 
       // Handle both array and object responses
       let eventsArray = [];
