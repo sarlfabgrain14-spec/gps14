@@ -26,7 +26,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   vehicles,
   onMarkerClick,
   center = [35.3764, 1.3218],
-  zoom = 13,
+  zoom = 10,
   focusedVehicleImei = null,
   mapType = 'leaflet',
 }) => {
