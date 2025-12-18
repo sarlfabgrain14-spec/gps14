@@ -9,8 +9,8 @@ import {
   Platform,
   Modal,
 } from 'react-native';
-import { useQuery } from '@tantml:invoke>
-<invoke name="Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { trackingApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
 import { useLanguageStore } from '../../stores/languageStore';
