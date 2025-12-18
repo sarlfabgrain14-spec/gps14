@@ -35,7 +35,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     const vehiclesJSON = JSON.stringify(vehicles);
     const centerJSON = JSON.stringify(vehicles && vehicles.length > 0 ? [vehicles[0].lat, vehicles[0].lng] : center);
 
-    // Define tile layers based on map type
+    // Define tile layers based on map type (only leaflet and arcgis)
     let tileLayerConfig = '';
     if (mapType === 'arcgis') {
       tileLayerConfig = `
@@ -44,16 +44,8 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
           maxZoom: 19
         }).addTo(map);
       `;
-    } else if (mapType === 'mapbox') {
-      tileLayerConfig = `
-        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-          attribution: '© Mapbox © OpenStreetMap',
-          maxZoom: 19,
-          tileSize: 512,
-          zoomOffset: -1
-        }).addTo(map);
-      `;
     } else {
+      // Default to Leaflet/OpenStreetMap
       tileLayerConfig = `
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
