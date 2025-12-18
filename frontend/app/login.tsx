@@ -114,7 +114,11 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.header}>
-          <Ionicons name="car-sport" size={64} color="#2196F3" />
+          <Image 
+            source={require('../assets/images/icon.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>{t('appName', language)}</Text>
           <Text style={styles.subtitle}>{t('appSubtitle', language)}</Text>
         </View>
