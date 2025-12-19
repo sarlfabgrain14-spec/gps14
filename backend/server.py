@@ -50,6 +50,10 @@ async def root():
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
+    if db is None:
+        logger.warning("Database not available, returning mock response")
+        status_obj = StatusCheck(**input.dict())
+        return status_obj
     status_dict = input.dict()
     status_obj = StatusCheck(**status_dict)
     _ = await db.status_checks.insert_one(status_obj.dict())
@@ -57,8 +61,20 @@ async def create_status_check(input: StatusCheckCreate):
 
 @api_router.get("/status", response_model=List[StatusCheck])
 async def get_status_checks():
+    if db is None:
+        logger.warning("Database not available, returning empty list")
+        return []
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
+
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for deployment"""
+    return {
+        "status": "healthy",
+        "database": "connected" if db is not None else "disconnected",
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 # Include the router in the main app
 app.include_router(api_router)
