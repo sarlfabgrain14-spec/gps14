@@ -14,10 +14,18 @@ from datetime import datetime
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection with error handling for deployment
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'gps14_database')
+
+try:
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    db = client[db_name]
+    logger.info(f"MongoDB client initialized with database: {db_name}")
+except Exception as e:
+    logger.warning(f"MongoDB initialization warning: {e}. App will continue without database.")
+    client = None
+    db = None
 
 # Create the main app without a prefix
 app = FastAPI()
