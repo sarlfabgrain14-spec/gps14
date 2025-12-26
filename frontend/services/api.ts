@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://tracking.gps-14.net/api';
+// Use environment variable if available, otherwise fallback to default GPS tracking API
+const BASE_URL = process.env.EXPO_PUBLIC_GPS_API_URL || 'https://tracking.gps-14.net/api';
 
 class TrackingAPI {
   private apiKey: string | null = null;
